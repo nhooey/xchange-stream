@@ -4,8 +4,8 @@
 
     <groupId>info.bitrich.xchange-stream</groupId>
     <artifactId>xchange-stream-parent</artifactId>
+    <version>${git.commit.id.describe}</version>
     <packaging>pom</packaging>
-    <version>4.3.3-SNAPSHOT</version>
 
     <modules>
         <module>xchange-stream-core</module>
@@ -60,14 +60,16 @@
     </scm>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>central</id>
+            <name>BigTerminal Artifactory</name>
+            <url>http://${env.ARTIFACTORY_HOST}:${env.ARTIFACTORY_PORT}/artifactory/${env.ARTIFACTORY_REPO_KEY}</url>
         </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>BigTerminal Artifactory</name>
+            <url>http://${env.ARTIFACTORY_HOST}:${env.ARTIFACTORY_PORT}/artifactory/${env.ARTIFACTORY_REPO_KEY}</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <repositories>
@@ -136,11 +138,59 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.3</version>
+            </plugin>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.2.4</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <echo>[git.commit.id] ${git.commit.id}</echo>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+                    <prefix>git</prefix>
+                    <verbose>true</verbose>
+                    <injectAllReactorProjects>true</injectAllReactorProjects>
+                    <generateGitPropertiesFile>false</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                    <format>properties</format>
+                    <gitDescribe>
+                        <skip>false</skip>
+                        <always>true</always>
+                        <dirty>-dirty</dirty>
+                    </gitDescribe>
+                </configuration>
             </plugin>
         </plugins>
     </build>
